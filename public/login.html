@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Gestion de Bibliothèque</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Réinitialisation des styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Style général */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* Header / Navbar */
+    header {
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-button, .logout-button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+
+    .nav-button {
+      background-color: #2e7d32;
+      color: #ffffff;
+    }
+
+    .nav-button:hover {
+      background-color: #2e7d32;
+      transform: translateY(-2px);
+    }
+
+    .logout-button {
+      background-color: #2e7d32;
+      color: #ffffff;
+    }
+
+    .logout-button:hover {
+      background-color: #2e2422;
+      transform: translateY(-2px);
+    }
+
+    /* Main */
+    main {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    /* Section Connexion */
+    .login-section {
+      max-width: 400px;
+      margin: 50px auto;
+      text-align: center;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 1s ease forwards;
+      opacity: 0;
+    }
+
+    .login-section h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #46494b;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #1e252b;
+      text-align: left;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2e7d32;
+    }
+
+    button[type="submit"] {
+      background-color: #2e7d32;
+      color: #ffffff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #2e7d32;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #2c3e50;
+      color: #ecf0f1;
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+
+    footer p {
+      font-size: 0.9rem;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+      }
+
+      .nav-button, .logout-button {
+        width: 100%;
+      }
+
+      .login-section {
+        margin: 20px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <h1>Gestion de Bibliothèque</h1>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main>
+    <section class="login-section">
+      <h2>Connexion</h2>
+      <form id="loginForm">
+        <label for="username">Nom d'utilisateur</label>
+        <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Gestion de Bibliothèque. Tous droits réservés.</p>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (username === 'Admin' && password === 'admin') {
+        localStorage.setItem('isLoggedIn', 'true');
+        window.location.href = 'index.html';
+      } else {
+        alert('Nom d\'utilisateur ou mot de passe incorrect.');
+      }
+    });
+  </script>
+</body>
+</html>

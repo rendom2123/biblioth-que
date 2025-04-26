@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestion des Livres</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #f0f8f4;
+      color: #2f4f2f;
+      padding: 20px;
+    }
+
+    .top-buttons {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+    }
+    .top-buttons button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .top-buttons button:hover {
+      background-color: #388e3c;
+      transform: translateY(-1px);
+    }
+
+    h1 {
+      text-align: center;
+      color: #3c6e47;
+      margin-bottom: 30px;
+    }
+
+    form {
+      background-color: #ffffff;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease, transform 0.1s ease;
+    }
+    form:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transform: translateY(-2px);
+    }
+    form input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #c8e6c9;
+      border-radius: 4px;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus {
+      border-color: #66bb6a;
+    }
+    form button {
+      width: 100%;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    form button:hover {
+      background-color: #388e3c;
+      transform: translateY(-1px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    table:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #a5d6a7;
+      text-align: center;
+    }
+    th {
+      background-color: #81c784;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f1f8e9;
+    }
+    tr:hover {
+      background-color: #e0f2e9;
+    }
+
+    .action-buttons button {
+      margin: 2px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      background-color: #66bb6a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .action-buttons button:hover {
+      background-color: #4caf50;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-buttons">
+    <button onclick="window.location.href='index.html'">Accueil</button>
+  </div>
+
+  <h1>Gestion des Livres</h1>
+
+  <!-- Formulaire pour ajouter/modifier un livre -->
+  <form id="livreForm">
+    <input type="hidden" id="livreId">
+    <input type="text" id="livreTitre" placeholder="Titre" required>
+    <input type="text" id="livreAuteur" placeholder="Auteur" required>
+    <input type="text" id="livreIsbn" placeholder="ISBN" required>
+    <button type="submit">Ajouter / Modifier</button>
+  </form>
+
+  <!-- Tableau pour afficher les livres -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Auteur</th>
+        <th>ISBN</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="livresList"></tbody>
+  </table>
+
+  <script>
+    const livreForm = document.getElementById('livreForm');
+    const livresList = document.getElementById('livresList');
+    const livreIdInput = document.getElementById('livreId');
+    const livreTitreInput = document.getElementById('livreTitre');
+    const livreAuteurInput = document.getElementById('livreAuteur');
+    const livreIsbnInput = document.getElementById('livreIsbn');
+
+    async function loadLivres() {
+      try {
+        const response = await fetch('http://localhost:3000/api/livres');
+        if (!response.ok) throw new Error('Erreur lors du chargement des livres');
+        const livres = await response.json();
+        livresList.innerHTML = '';
+        livres.forEach(livre => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${livre.id}</td>
+            <td>${livre.titre}</td>
+            <td>${livre.auteur}</td>
+            <td>${livre.isbn}</td>
+            <td class="action-buttons">
+              <button onclick="editLivre(${livre.id}, '${livre.titre}', '${livre.auteur}', '${livre.isbn}')">Modifier</button>
+              <button onclick="deleteLivre(${livre.id})">Supprimer</button>
+            </td>
+          `;
+          livresList.appendChild(tr);
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    livreForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = livreIdInput.value;
+      const titre = livreTitreInput.value.trim();
+      const auteur = livreAuteurInput.value.trim();
+      const isbn = livreIsbnInput.value.trim();
+      const method = id ? 'PUT' : 'POST';
+      const url = id
+        ? `http://localhost:3000/api/livres/${id}`
+        : 'http://localhost:3000/api/livres';
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ titre, auteur, isbn })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Erreur serveur');
+        }
+        livreForm.reset();
+        livreIdInput.value = '';
+        loadLivres();
+      } catch (err) {
+        alert(`Erreur : ${err.message}`);
+      }
+    });
+
+    function editLivre(id, titre, auteur, isbn) {
+      livreIdInput.value = id;
+      livreTitreInput.value = titre;
+      livreAuteurInput.value = auteur;
+      livreIsbnInput.value = isbn;
+    }
+
+    async function deleteLivre(id) {
+      if (!confirm('Confirmer la suppression ?')) return;
+      try {
+        const res = await fetch(`http://localhost:3000/api/livres/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur lors de la suppression');
+        loadLivres();
+      } catch (err) {
+        alert(`Erreur : ${err.message}`);
+      }
+    }
+
+    loadLivres();
+  </script>
+</body>
+</html>

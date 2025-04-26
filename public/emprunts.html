@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestion des Emprunts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0fdf4;
+      color: #2f4f2f;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .top-buttons {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+    }
+    .top-buttons button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .top-buttons button:hover {
+      background-color: #388e3c;
+      transform: translateY(-2px);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(34, 139, 34, 0.2);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 30px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 30px;
+      transition: box-shadow 0.3s ease, transform 0.1s ease;
+    }
+    form:hover {
+      box-shadow: 0 4px 15px rgba(34, 139, 34, 0.3);
+      transform: translateY(-2px);
+    }
+    form input,
+    form select {
+      padding: 8px;
+      border: 1px solid #a5d6a7;
+      border-radius: 6px;
+      background-color: #e8f5e9;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus,
+    form select:focus {
+      outline: none;
+      border-color: #66bb6a;
+    }
+    form button {
+      grid-column: span 2;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    form button:hover {
+      background-color: #388e3c;
+      transform: translateY(-2px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #ffffff;
+      transition: box-shadow 0.3s ease;
+    }
+    table:hover {
+      box-shadow: 0 4px 15px rgba(34, 139, 34, 0.3);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #c8e6c9;
+      text-align: center;
+    }
+    th {
+      background-color: #a5d6a7;
+      color: #1b5e20;
+    }
+    tr:nth-child(even) {
+      background-color: #f1f8e9;
+    }
+    tr:hover {
+      background-color: #dcedc8;
+    }
+    .action-buttons button {
+      background-color: #66bb6a;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .action-buttons button:hover {
+      background-color: #4caf50;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-buttons">
+    <button onclick="window.location.href='index.html'">Retour à l'accueil</button>
+  </div>
+
+  <div class="container">
+    <h1>Gestion des Emprunts</h1>
+
+    <form id="empruntForm">
+      <input type="hidden" id="empruntId" />
+      <select id="empruntEtudiantId" required>
+        <option value="">Sélectionner un étudiant</option>
+      </select>
+      <select id="empruntLivreId" required>
+        <option value="">Sélectionner un livre</option>
+      </select>
+      <input type="date" id="empruntDateEmprunt" required />
+      <input type="date" id="empruntDateRetour" />
+      <button type="submit">Ajouter / Modifier</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Étudiant</th>
+          <th>Livre</th>
+          <th>Date d'emprunt</th>
+          <th>Date de retour</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="empruntsList"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const empruntForm = document.getElementById('empruntForm');
+    const empruntsList = document.getElementById('empruntsList');
+    const empruntIdInput = document.getElementById('empruntId');
+    const empruntEtudiantIdInput = document.getElementById('empruntEtudiantId');
+    const empruntLivreIdInput = document.getElementById('empruntLivreId');
+    const empruntDateEmpruntInput = document.getElementById('empruntDateEmprunt');
+    const empruntDateRetourInput = document.getElementById('empruntDateRetour');
+
+    async function loadEtudiantsForSelect() {
+      try {
+        const resp = await fetch('http://localhost:3000/api/etudiants');
+        const etudiants = await resp.json();
+        empruntEtudiantIdInput.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+        etudiants.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id; opt.textContent = e.nom;
+          empruntEtudiantIdInput.appendChild(opt);
+        });
+      } catch (err) { alert('Erreur : ' + err.message); }
+    }
+
+    async function loadLivresForSelect() {
+      try {
+        const resp = await fetch('http://localhost:3000/api/livres');
+        const livres = await resp.json();
+        empruntLivreIdInput.innerHTML = '<option value="">Sélectionner un livre</option>';
+        livres.forEach(l => {
+          const opt = document.createElement('option');
+          opt.value = l.id; opt.textContent = l.titre;
+          empruntLivreIdInput.appendChild(opt);
+        });
+      } catch (err) { alert('Erreur : ' + err.message); }
+    }
+
+    async function loadEmprunts() {
+      try {
+        const resp = await fetch('http://localhost:3000/api/emprunts');
+        const emprunts = await resp.json();
+        empruntsList.innerHTML = '';
+        emprunts.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.id}</td>
+            <td>${r.Etudiant?.nom||'N/A'}</td>
+            <td>${r.Livre?.titre||'N/A'}</td>
+            <td>${new Date(r.dateEmprunt).toLocaleDateString()}</td>
+            <td>${r.dateRetour?new Date(r.dateRetour).toLocaleDateString():'Non retourné'}</td>
+            <td class="action-buttons">
+              <button onclick="editEmprunt(${r.id},${r.etudiantId},${r.livreId},'${r.dateEmprunt}','${r.dateRetour||''}')">Modifier</button>
+              <button onclick="deleteEmprunt(${r.id})">Supprimer</button>
+            </td>`;
+          empruntsList.appendChild(tr);
+        });
+      } catch (err) { alert('Erreur : ' + err.message); }
+    }
+
+    empruntForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = empruntIdInput.value;
+      const url = id ? `http://localhost:3000/api/emprunts/${id}` : 'http://localhost:3000/api/emprunts';
+      const method = id ? 'PUT' : 'POST';
+      const data = {
+        etudiantId: empruntEtudiantIdInput.value,
+        livreId: empruntLivreIdInput.value,
+        dateEmprunt: empruntDateEmpruntInput.value,
+        dateRetour: empruntDateRetourInput.value||null
+      };
+      try {
+        const res = await fetch(url, {
+          method, headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(data)
+        });
+        if(!res.ok){const e=await res.json();throw new Error(e.error)}
+        empruntForm.reset(); empruntIdInput.value='';
+        loadEmprunts();
+      } catch(err){alert('Erreur : '+err.message)}
+    });
+
+    function editEmprunt(id, etId, lvId, dEm, dRt){
+      empruntIdInput.value=id;
+      empruntEtudiantIdInput.value=etId;
+      empruntLivreIdInput.value=lvId;
+      empruntDateEmpruntInput.value=dEm.split('T')[0];
+      empruntDateRetourInput.value=dRt?dRt.split('T')[0]:'';
+    }
+
+    async function deleteEmprunt(id){
+      if(!confirm('Supprimer cet emprunt ?'))return;
+      try{
+        const res=await fetch(`http://localhost:3000/api/emprunts/${id}`,{method:'DELETE'});
+        if(!res.ok)throw new Error('Suppression échouée');
+        loadEmprunts();
+      }catch(err){alert('Erreur : '+err.message)}
+    }
+
+    loadEtudiantsForSelect();
+    loadLivresForSelect();
+    loadEmprunts();
+  </script>
+</body>
+</html>

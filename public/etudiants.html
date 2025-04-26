@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestion des Étudiants</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #f0f8f4;
+      color: #2f4f2f;
+      padding: 20px;
+    }
+
+    .top-buttons {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .top-buttons button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .top-buttons button:hover {
+      background-color: #388e3c;
+      transform: translateY(-1px);
+    }
+
+    h1 {
+      text-align: center;
+      color: #3c6e47;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      width: 70%;
+      max-width: 300px;
+      padding: 10px;
+      border: 1px solid #c8e6c9;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .search-bar input:focus {
+      border-color: #66bb6a;
+    }
+    .search-bar button {
+      padding: 10px 15px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 5px;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .search-bar button:hover {
+      background-color: #388e3c;
+      transform: translateY(-1px);
+    }
+
+    form {
+      background-color: #ffffff;
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease, transform 0.1s ease;
+    }
+    form:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transform: translateY(-2px);
+    }
+    form input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #c8e6c9;
+      border-radius: 4px;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus {
+      border-color: #66bb6a;
+    }
+    form button {
+      width: 100%;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    form button:hover {
+      background-color: #388e3c;
+      transform: translateY(-1px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    table:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #a5d6a7;
+      text-align: center;
+    }
+    th {
+      background-color: #81c784;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f1f8e9;
+    }
+    tr:hover {
+      background-color: #e0f2e9;
+    }
+    .action-buttons button {
+      margin: 2px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .action-buttons button:hover {
+      background-color: #81c784;
+      transform: translateY(-1px);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-buttons">
+    <button onclick="window.location.href='index.html'">Accueil</button>
+  </div>
+
+  <h1>Gestion des Étudiants</h1>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Rechercher un étudiant..." />
+    <button id="searchButton">Rechercher</button>
+  </div>
+
+  <form id="etudiantForm">
+    <input type="hidden" id="etudiantId">
+    <input type="text" id="etudiantNom" placeholder="Nom" required>
+    <input type="email" id="etudiantEmail" placeholder="Email" required>
+    <button type="submit">Ajouter / Modifier</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="etudiantsList"></tbody>
+  </table>
+
+  <script>
+    const etudiantForm = document.getElementById('etudiantForm');
+    const etudiantsList = document.getElementById('etudiantsList');
+    const etudiantIdInput = document.getElementById('etudiantId');
+    const etudiantNomInput = document.getElementById('etudiantNom');
+    const etudiantEmailInput = document.getElementById('etudiantEmail');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+
+    let allEtudiants = [];
+
+    async function loadEtudiants() {
+      try {
+        const response = await fetch('http://localhost:3000/api/etudiants');
+        if (!response.ok) throw new Error('Erreur lors du chargement des étudiants');
+        allEtudiants = await response.json();
+        displayEtudiants(allEtudiants);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    function displayEtudiants(list) {
+      etudiantsList.innerHTML = '';
+      list.forEach(e => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${e.id}</td>
+          <td>${e.nom}</td>
+          <td>${e.email}</td>
+          <td class="action-buttons">
+            <button onclick="editEtudiant(${e.id}, '${e.nom}', '${e.email}')">Modifier</button>
+            <button onclick="deleteEtudiant(${e.id})">Supprimer</button>
+          </td>`;
+        etudiantsList.appendChild(tr);
+      });
+    }
+
+    etudiantForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = etudiantIdInput.value;
+      const nom = etudiantNomInput.value.trim();
+      const email = etudiantEmailInput.value.trim();
+      const method = id ? 'PUT' : 'POST';
+      const url = id
+        ? `http://localhost:3000/api/etudiants/${id}`
+        : 'http://localhost:3000/api/etudiants';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, email })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Erreur serveur');
+        }
+        etudiantForm.reset();
+        etudiantIdInput.value = '';
+        loadEtudiants();
+      } catch (err) {
+        alert(`Erreur : ${err.message}`);
+      }
+    });
+
+    function editEtudiant(id, nom, email) {
+      etudiantIdInput.value = id;
+      etudiantNomInput.value = nom;
+      etudiantEmailInput.value = email;
+    }
+
+    async function deleteEtudiant(id) {
+      if (!confirm('Confirmer la suppression ?')) return;
+      try {
+        const res = await fetch(`http://localhost:3000/api/etudiants/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur lors de la suppression');
+        loadEtudiants();
+      } catch (err) {
+        alert(`Erreur : ${err.message}`);
+      }
+    }
+
+    searchButton.addEventListener('click', () => {
+      const filter = searchInput.value.toLowerCase();
+      displayEtudiants(allEtudiants.filter(e =>
+        e.nom.toLowerCase().includes(filter) ||
+        e.email.toLowerCase().includes(filter)
+      ));
+    });
+
+    loadEtudiants();
+  </script>
+</body>
+</html>
